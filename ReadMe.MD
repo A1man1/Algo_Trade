@@ -24,7 +24,7 @@ The Algorithmic Trading System is a Python-based project designed to automate tr
 1. Clone the repository: `git clone <repository-url>`
 2. Install dependencies: `pip install -r requirements.txt`
 3. Configure API keys and settings in `config.py`
-4. Run the main script: `python main.py`
+4. Run the main script: `python test.py`
 
 ## Usage
 - Explore different trading strategies in the `strategies` module.
@@ -48,6 +48,6 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 - [Acknowledgement 2](acknowledgement-2-url)
 
 ## Support
-For any inquiries or support, please contact [support-email@example.com](mailto:support-email@example.com).
+For any inquiries or support, please contact [aman.sharma@greenridertech.com](aman.sharma@greenridertech.com), [aastha.batta@greenridertech.com](aastha.batta@greenridertech.com), [asad.ali@greenridertech.com](asad.ali@greenridertech.com), [akshat.Jain@greenridertech.com](akshat.Jain@greenridertech.com).
 
 ## Testing
