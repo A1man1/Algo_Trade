@@ -7,6 +7,7 @@ import websockets
 from google.protobuf.json_format import MessageToDict
 import MarketDataFeed_pb2 as pb
 import os
+from typing import List
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -29,9 +30,18 @@ def decode_protobuf(buffer):
     return feed_response
 
 
-async def fetch_market_data(data):
+async def fetch_market_data(data, mode =  None, instrument_key : List["instrument"] =  None):
     """Fetch market data using WebSocket and print it."""
 
+        
+    data = {
+                "guid": "someguid",
+                "method": "sub",
+                "data": {
+                    "mode": "full",
+                    "instrumentKeys": ["NSE_INDEX|Nifty Bank", "NSE_INDEX|Nifty 50"]
+                }
+            }
     # Create default SSL context
     ssl_context = ssl.create_default_context()
     ssl_context.check_hostname = False
