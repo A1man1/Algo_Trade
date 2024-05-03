@@ -6,7 +6,10 @@ import requests
 from abc import ABC, abstractmethod
 from core import log
 
-class Trade(BaseModel):
+# To be Added
+# DATA
+
+class Trade(BaseModel):   # Add time stamp 
     stock_name: str
     quantity: int
     price: float

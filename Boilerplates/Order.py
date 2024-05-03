@@ -1,6 +1,6 @@
 from abc import ABC
 import Portfolio
-class IOrder:
+class IOrder: # Add to base.py
     def __init__(self, portfolio):
         self.portfolio = portfolio
         self.order_history = []

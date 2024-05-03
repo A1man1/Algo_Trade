@@ -7,7 +7,10 @@ from pprint import pprint
 import requests
 from websocket.web_socket_data import fetch_market_data
 
-class IData(ABC):
+
+
+
+class Data(ABC):
     def __init__(self):
         pass
 
@@ -21,7 +24,7 @@ class IData(ABC):
     def get_market_feed():
         pass
 
-class UpstocksDataClient(IData):
+class UpstocksDataClient(Data):
     def __init__(self, access_token):
         self.configuration = upstox_client.Configuration()
         self.configuration.access_token = access_token
@@ -35,7 +38,7 @@ class UpstocksDataClient(IData):
             print("Exception when calling MarketQuoteApi->get_market_quote: %s\n" % e)
             raise
 
-    def get_historical_data(self, symbol, interval, to_date, api_version):
+    def get_historical_data(self, symbol, interval, to_date, api_version): # To be made by supriya
         try:
             api_instance = upstox_client.HistoryApi()
             api_response = api_instance.get_historical_candle_data(symbol, interval, to_date, api_version)
@@ -45,5 +48,5 @@ class UpstocksDataClient(IData):
 
     def get_market_feed(self):
         #to use websocket
-        # fetch_market_data()
+        fetch_market_data()
         pass
