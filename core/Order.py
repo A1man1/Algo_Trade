@@ -12,14 +12,7 @@ class Order(IOrder, Portfolio):
     def __init__(self):
         self.order_history = []
         self.symbol = self.stock_name
-
-    def set_strategy(self):
-        for strategy in self.strategy_types:
-            if settings.MEAN_REVISION == strategy:
-                pass
-            if settings.VMAP == strategy:
-                pass
-        
+       
 
     def place_order(self, processed_data: Series, threshold, quantity) -> Tuple[List[Tuple[str, float, float]], float]:
         """

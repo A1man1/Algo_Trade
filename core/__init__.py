@@ -6,3 +6,4 @@ from core.base import (IOrder ,
                        Trade)
 from core.engine import AlgoTrade
 from core.Portfolio import Portfolio
+from core.Order import Order
