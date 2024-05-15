@@ -7,7 +7,7 @@ import pandas as pd
 from pandas import DataFrame
 
 #imports from modules
-from core import IPortfolio , Position , Trade
+from core.base import IPortfolio , Position , Trade
 
     
 class Portfolio(IPortfolio):

@@ -1,14 +1,17 @@
 from typing import List, Tuple
-from pandas import Series, DataFrame
-from core.base import order, Strategy
+from pandas import Series
+from core.base import  Strategy
 
 
 class VWAP(Strategy):
+    def __init__(self, order, quantity=1, short_ma_window=0, long_ma_window=100, threshold=0.01, transaction_fee=0.01):
+        super().__init__(order,quantity, short_ma_window, long_ma_window, threshold, transaction_fee)
 
     def execute(self) -> Tuple[List[Tuple[str, float, float]], float]:
-        vwap = self.calculate_vwap()
+        vwap = self.calculate()
         signals, total_profit = self.generate_signals(vwap)
         return signals, total_profit
+
 
     def calculate(self) -> Series:
         """
@@ -35,6 +38,7 @@ class VWAP(Strategy):
 
         return self.order.data_frame['vwap']
 
+
     def generate_signals(self, vwap: Series) -> Tuple[List[Tuple[str, float, float]], float]:
         """
         Generate buy/sell signals and calculate total profit based on VWAP.
@@ -49,6 +53,8 @@ class VWAP(Strategy):
         holding = False
         entry_price = None
         total_profit = 0
+        
+        print(self.order.data_frame)
 
         for index, row in self.order.data_frame.iterrows():
             close_price = row['close']
@@ -58,11 +64,11 @@ class VWAP(Strategy):
             if not holding and close_price < current_vwap * (1 - self.threshold):
                 # Buy signal
                 self.order.open_position(
-                    entry_price=close_price, shares=self.order.positions[-1].shares)
+                    entry_price=close_price, shares=self.quantity)
                 entry_price = close_price
                 holding = True
                 signals.append(('buy', index, close_price,
-                               self.order.positions[-1].shares))
+                               self.quantity))
 
             if holding and close_price > current_vwap * (1 + self.threshold):
                 # Sell signal
@@ -73,7 +79,7 @@ class VWAP(Strategy):
                 total_profit += percent_profit
                 holding = False
                 signals.append(('sell', index, close_price,
-                               self.order.positions[-1].shares))
+                               self.quantity))
 
         # Update total profit attribute in order
         self.order.total_profit = total_profit

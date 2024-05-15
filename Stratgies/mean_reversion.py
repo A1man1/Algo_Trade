@@ -1,14 +1,15 @@
 from typing import List, Tuple
-from core.base import Strategy, Order
+from core.order import Order
+from core.base import Strategy
 from core import log
 from pandas import DataFrame
 
 
 class MeanReversion(Strategy):
 
-    def __init__(self, order: Order, short_ma_window=20, long_ma_window=100, threshold=0.02, transaction_fee=0.01):
+    def __init__(self,order,quantity,short_ma_window=20, long_ma_window=100, threshold=0.02, transaction_fee=0.01):
 
-        super().__init__(order, short_ma_window, long_ma_window, threshold, transaction_fee)
+        super().__init__(order, quantity, short_ma_window, long_ma_window, threshold, transaction_fee)
 
         self.holding = False
 
@@ -53,7 +54,6 @@ class MeanReversion(Strategy):
 
         signals = []
 
-        holding = False
 
         entry_price = None
 
@@ -69,20 +69,20 @@ class MeanReversion(Strategy):
             long_ma = row['long_ma']
 
 
-            if not holding and close_price < (1 - self.threshold) * long_ma:
+            if not self.holding and close_price < (1 - self.threshold) * long_ma:
 
                 # Buy signal
 
-                holding = True
+                self.holding = True
 
                 entry_price = close_price
 
                 self.order.open_position(entry_price=entry_price, shares=self.order.positions[-1].shares)
                 
-                signals.append(('buy', index, close_price, self.order.positions[-1].shares))
+                signals.append(('buy', index, close_price, self.quantity))
 
 
-            if holding and (
+            if self.holding and (
 
                 (close_price > (1 + self.threshold) * long_ma) or
 
@@ -100,11 +100,11 @@ class MeanReversion(Strategy):
 
                 self.order.close_position(position_to_close=self.order.positions[-1], percent=0.2, current_price=close_price)
 
-                signals.append(('sell', index, close_price, self.order.positions[-1].shares))
+                signals.append(('sell', index, close_price, self.quantity))
 
                 total_profit += profit
 
-                holding = False
+                self.holding = False
 
                 entry_price = None
 
@@ -116,6 +116,6 @@ class MeanReversion(Strategy):
 
     def execute(self) -> Tuple[List[Tuple[str, float, float]], float]:
 
-        data_frame = self.calculate_moving_averages()
+        data_frame = self.calculate()
 
         return self.generate_signals(data_frame)

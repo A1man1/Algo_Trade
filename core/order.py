@@ -2,13 +2,14 @@ from typing import Tuple, List, Optional
 
 from pandas import Series, DataFrame
 
-from core import IOrder, Portfolio
+from core.base import IOrder
+from core.portfolio import Portfolio
 
 
-class Order(IOrder, Portfolio):
-    def __init__(self):
-        self.order_history = []
-        self.symbol = self.stock_name
+class OrderSub(IOrder):
+    def __init__(self,*args,**kwargs):
+        super(OrderSub, self).__init__(*args, **kwargs)
+        
 
     def place_order(self, processed_data: Optional[Series | DataFrame]) -> Tuple[List[Tuple[str, float, float]], float]:
         """
@@ -20,9 +21,14 @@ class Order(IOrder, Portfolio):
         Returns:
             Tuple[List[Tuple[str, float, float]], float]: Signals (buy/sell) and total profit.
         """
-        for trade_type, index, close_price, quantity in processed_data:
-            self.order_history.append({"symbol": self.symbol, "quantity": quantity,
+        order_history =[] 
+        for trade_type, index, close_price, quantity in processed_data[0]:
+            order_history.append({"symbol": self.symbol, "quantity": quantity,
                                       "order_type": trade_type, 'closed_price': close_price, 'index': index})
+        
+        self.order_history.extend(order_history)
+        return order_history
+
 
     def modify_order(self, quantity, order_type):
         for order in self.order_history:
@@ -42,3 +48,10 @@ class Order(IOrder, Portfolio):
 
     def get_order_history(self):
         return self.order_history
+    
+class Order(Portfolio,OrderSub):
+    def __init__(self,*args, **kwargs):
+        self.order_history = []
+        self.symbol = self.stock_name
+        super(Order, self).__init__(*args, **kwargs)
+        

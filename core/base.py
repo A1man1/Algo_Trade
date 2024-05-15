@@ -5,8 +5,6 @@ from abc import ABC, abstractmethod
 from pandas import Series, DataFrame
 
 
-from core import Order
-
 
 class Trade(BaseModel):
     stock_name: str
@@ -44,8 +42,7 @@ class Position(BaseModel):
 
 
 class IOrder (ABC):
-    def __init__(self, strategy_types: Optional[List[str]]):
-        self.strategy_types = strategy_types
+    def __init__(self):
         self.order_history = []
 
     @abstractmethod
@@ -81,14 +78,15 @@ class IPortfolio(ABC):
     def close_position(self, symbol, quantity):
         pass
 
-    @abstractmethod
-    def get_portfolio(self):
-        pass
+    # @abstractmethod
+    # def get_portfolio(self):
+    #     pass
 
 
 class Strategy(ABC):
-    def __init__(self, order: Order, short_ma_window=0, long_ma_window=100, threshold=0.01,
+    def __init__(self, order:IOrder,quantity=1,short_ma_window=0, long_ma_window=100, threshold=0.01,
                  transaction_fee=0.01):
+        self.quantity=quantity
         self.order = order
         self.short_ma_window = short_ma_window
         self.long_ma_window = long_ma_window

@@ -23,26 +23,28 @@ data['timestamp']= pd.to_datetime(data.index, format="%m/%d/%Y")
 # print(data['volume'])
 data['volume'] = data['volume'].apply(int)
 data[['open', 'high', 'low', 'close', 'volume']] = data[['open', 'high', 'low', 'close','volume']].astype(float)
-trade = AlgoTrade(stock_name='Apple',data_frame=data,from_dataframe=True)
+
+
+trade = AlgoTrade(stock_name='Apple',data_frame=data,from_dataframe=True,strategy_types= [settings.VWAP], quantity=2)
 
 
 # portfolio = Portfolio(data_frame=data,stock_name=symbol)
-print(settings.MEAN_REVISION)
-sell_signals = trade.execute_trade(settings.MEAN_REVISION)
+# print(settings.MEAN_REVISION)
+orders = trade.execute_trade()
 # Print results
-print(sell_signals)
+print(orders)
 
 
-for timestamp, profit, close_price in sell_signals[0]:
-     print(f"Timestamp: {timestamp}, Profit: ${profit:.2f}, Close Price: ${close_price:.2f}")
+# for timestamp, profit, close_price in sell_signals[0]:
+#      print(f"Timestamp: {timestamp}, Profit: ${profit:.2f}, Close Price: ${close_price:.2f}")
 
-print('vwap')
+# print('vwap')
 
-sell_signals =trade.execute_trade(settings.VMAP)
-print(sell_signals)
+# sell_signals =trade.execute_trade()
+# print(sell_signals)
 
-# Print remaining positions in the portfolio
-print("\nRemaining positions in the portfolio:")
-for position in trade.positions:
-    position.show()
+# # Print remaining positions in the portfolio
+# print("\nRemaining positions in the portfolio:")
+# for position in trade.positions:
+#     position.show()
 
