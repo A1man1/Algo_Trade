@@ -1,34 +1,48 @@
 from Stratgies import VWAP , MeanReversion
-from core import Portfolio, settings
+from core import Order, settings
 
-class AlgoTrade(Portfolio):
+class AlgoTrade(Order):
     def __init__(self, *args, **kwargs):
         super(AlgoTrade, self).__init__(*args, **kwargs)
+
+    def set_strategy(self):
+        results = None
+        if isinstance(self.strategy_types, str):
+            if self.strategy_types == settings.MEAN_REVISION:
+                mean = MeanReversion(self)
+                results = mean.execute()
+            
+            elif self.strategy_types == settings.VMAP:
+                vwap =  VWAP(self)
+                results = vwap.execute()
+        else:
+            results = {}
+            for strategy in self.strategy_types:
+                if strategy == settings.MEAN_REVISION:
+                    mean = MeanReversion(self)
+                    results[settings.MEAN_REVISION] = mean.execute()
+            
+                if strategy == settings.VWAP:
+                    vwap =  VWAP(self)
+                    results[settings.VWAP] = vwap.execute()
         
-    def execute_trade(self,strategy_name):
+        return results
+
+        
+    def execute_trade(self, threshold, quantity):
         """
         Simulate trades and update portfolio based on DataFrame.
         """
+        processed_data = self.set_strategy()
         results = None
-        
-        if strategy_name == settings.MEAN_REVISION:
-            mean = MeanReversion(self)
-            results = mean.execute()
-        
-        elif strategy_name == settings.VMAP:
-            vwap =  VWAP(self)
-            results = vwap.execute()
-        
-        
+        if isinstance(processed_data, list):
+            results = self.place_order(processed_data , threshold , quantity)
+        else:
+            results = {}
+            for strategy , data in processed_data.items():
+                data = self.place_order(data , threshold , quantity) 
+                results[strategy] = data
+                
         return results
-        
-        
-        # for index, row in self.data_frame.iterrows():
-        #     close_price = row['close']  # Assuming 'close' is the column name for closing prices
-            # Simulate trading strategy (example: buy if price > 100)
-            # if close_price > 100:
-            #     # Create a Trade object
-            #     trade = Trade(stock_name=self.stock_name, quantity=1, price=close_price, trade_type='sell')
-            #     self.trades.append(trade)
-            #     # Open a position with the trade's details
-            #     self.open_position(quantity=1, entry_price=close_price)
+                  
+

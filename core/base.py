@@ -5,6 +5,7 @@ import pandas as pd
 import requests
 from abc import ABC, abstractmethod
 from core import log
+import Portfolio
 
 class Trade(BaseModel):
     stock_name: str
@@ -42,104 +43,47 @@ class Position(BaseModel):
         return f"{self.type_} {self.shares}x{self.entry_price}"
 
 
-class Portfolio:
+class IOrder (ABC):
+    def __init__(self, strategy_types: Optional[List[str]]):
+        self.strategy_types = strategy_types
+        self.order_history = []
+    
+    @abstractmethod
+    def place_order(self, symbol, quantity, order_type):
+        pass
 
-    def __init__(self, url=None, stock_name=None, interval=None, api_key=None, outputsize="compact",
-                 function_type='TIME_SERIES_INTRADAY', data_frame:Optional[DataFrame]=None, from_dataframe = False):
-        
-        self.trades: List[Trade] = []
-        self.positions: List[Position] = []
-        self.total_profit: float = 0
-        self.data_frame= None
-        
-        if from_dataframe:
-            if not data_frame.empty:
-                self.data_frame = data_frame
-                self.stock_name = 'APPle'
-            else:
-                raise ValueError('"Need DataFrame"') 
-        elif url:
-            # Modified this line
-            self.api_key = api_key
-            self.url = url
-            self.function = function_type
-            self.stock_name = stock_name
-            self.interval = interval
-            self.output_size = outputsize
-            self.data_frame = self.fetch_data_from_api()
-        else:
-            raise ValueError('"Need url"') 
-            
+    @abstractmethod
+    def modify_order(self, order_id, new_quantity):
+        pass
 
-    def fetch_data_from_api(self) -> pd.DataFrame:
-        """
-        Fetch historical price data from an API URL and return as a DataFrame.
-        """
-        params = {
-            "function": self.function,
-            "symbol": self.stock_name,
-            "interval": self.interval,
-            "apikey": self.api_key,
-            "outputsize": self.output_size
-        }
+    @abstractmethod
+    def cancel_order(self, order_id):
+        pass
 
-        response = requests.get(self.url, params=params)
-        if response.status_code == 200:
-            data = response.json().get(f"Time Series ({self.interval})", {})
-            print(data)
-            if not data:
-                raise ValueError("Given url isn't working")
-            
-            df = DataFrame(data).T.reset_index()
-            df.columns = ['timestamp', 'open', 'high', 'low', 'close', 'volume']
-            df['timestamp'] = pd.to_datetime(df['timestamp'])
-            df[['open', 'high', 'low', 'close', 'volume']] = df[['open', 'high', 'low', 'close', 'volume']].astype(float)
-            return df
-        else:
-            raise ValueError(f"Error fetching data from API: {response.text}")
+    @abstractmethod
+    def get_order_history(self):
+        return self.order_history
+    
+    @abstractmethod
+    def set_strategy(self):
+        pass
 
-    def open_position(self, shares: int, entry_price: float):
-        """
-        Open a new position in the portfolio.
 
-        Args:
-            quantity (int): Quantity of the asset.
-            entry_price (float): Entry price of the asset.
-        """
-        # Create a new Position object
-        position = Position(stock_name=self.stock_name, number=len(self.positions) + 1, entry_price=entry_price,
-                            shares=shares, type_='long')
-        self.positions.append(position)
-        position.show()  # Display position details
+class IPortfolio(ABC):
+    def __init__(self):
+        self.holdings = {}
 
-    def close_position(self, position_to_close: Position, current_price: float, percent: float):
-        """
-        Close a position in the portfolio.
+    @abstractmethod
+    def open_position(self, symbol, quantity):
+        pass
 
-        Args:
-            position_to_close (Position): The position object to be closed.
-            current_price (float): The current price of the asset.
-        """
-        if position_to_close:
-        # Calculate the quantity to close based on the specified percentage
-            quantity_to_close = int(position_to_close.shares * percent)
+    @abstractmethod
+    def close_position(self, symbol, quantity):
+        pass
 
-            # Calculate profit/loss based on current price
-            entry_price = position_to_close.entry_price
-            profit_loss = (current_price - entry_price) * quantity_to_close
-            position_to_close.profit_loss = profit_loss
-
-            # Remove quantity_to_close from the position
-            position_to_close.shares -= quantity_to_close
-
-            # Log the trade
-            trade = Trade(stock_name=position_to_close.stock_name, quantity=quantity_to_close, price=current_price,
-                        trade_type='long')
-            self.trades.append(trade)
-
-            # If the entire position is closed, remove it from the portfolio
-            if position_to_close.shares <= 0:
-                self.positions.remove(position_to_close)
+    @abstractmethod
+    def get_portfolio(self):
+        pass
 
 
 class Strategy(ABC):
