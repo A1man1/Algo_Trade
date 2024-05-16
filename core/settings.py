@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     """
 
     # project declaratives.
-    project_name: str = config("PROJECT_NAME", cast=str, default="Inventory System")
+    project_name: str = config("PROJECT_NAME", cast=str, default="Algo Trade System")
     version: str = config("VERSION", cast=str, default="1.0.0")
    
     # app settings.
@@ -23,10 +23,6 @@ class Settings(BaseSettings):
     debug: bool = False
     testing: bool = False
 
-    #project variables 
-    MEAN_REVISION:str = 'mean_revision'
-    VWAP:str = 'vwap'
-    POV:str = 'pov'
     
 
 class ProdSettings(Settings):

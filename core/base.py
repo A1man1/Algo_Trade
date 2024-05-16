@@ -1,16 +1,16 @@
-from pydantic import BaseModel
-
+from pydantic import BaseModel 
 from typing import List, Tuple, Optional
 from abc import ABC, abstractmethod
 from pandas import Series, DataFrame
 
+from core.model import TradeType , PositionType
 
 
 class Trade(BaseModel):
     stock_name: str
     quantity: int
     price: float
-    trade_type: str  # 'buy' or 'sell'
+    trade_type: TradeType  # 'buy' or 'sell'
 
     def calculate_cost(self) -> float:
         return self.quantity * self.price
@@ -22,23 +22,25 @@ class Trade(BaseModel):
 class Position(BaseModel):
     number: int
     entry_price: float
-    shares: float
-    stock_name: str
-    exit_price: float = 0
-    profit_loss: float = 0
-    stop_loss: float = 0
-    type_: str
+    shares: float # The number of shares in the position.
+    stock_name: str # A string representing the name of the stock.
+    exit_price: float = 0  # price at which the position was exited (defaulted to 0).
+    profit_loss: float = 0 # profit or loss incurred in the position (defaulted to 0).
+    stop_loss: float = 0  # stop loss price for the position (defaulted to 0).
+    type_tends: PositionType  #type of position (long or short).
 
     def show(self):
         print(f"No. {self.number}")
-        print(f"Type: {self.type_}")
+        print(f"stock {self.stock_name}")
+        print(f"Type: {self.type_tends}")
         print(f"Entry: {self.entry_price}")
         print(f"Shares: {self.shares}")
         print(f"Exit: {self.exit_price}")
-        print(f"Stop: {self.stop_loss}\n")
+        print(f"Stop: {self.stop_loss}")
+        print(f"profit_loss: {self.profit_loss}\n")
 
     def __str__(self) -> str:
-        return f"{self.type_} {self.shares}x{self.entry_price}"
+        return f"{self.type_tends} {self.shares}x{self.entry_price}"
 
 
 class IOrder (ABC):
@@ -84,10 +86,11 @@ class IPortfolio(ABC):
 
 
 class Strategy(ABC):
-    def __init__(self, order:IOrder,quantity=1,short_ma_window=0, long_ma_window=100, threshold=0.01,
+    def __init__(self, order:IOrder,quantity,short_ma_window=0, long_ma_window=100, threshold=0.01,
                  transaction_fee=0.01,percent_close=0.2):
         self.quantity=quantity
         self.order = order
+        #self.stop_loss= stop_loss
         self.short_ma_window = short_ma_window
         self.long_ma_window = long_ma_window
         self.threshold = threshold
@@ -105,3 +108,4 @@ class Strategy(ABC):
     @abstractmethod
     def execute(self) -> Optional[Tuple[List[Tuple[str, float, float]], float] | None]:
         pass
+

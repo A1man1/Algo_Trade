@@ -3,6 +3,7 @@ from typing import Optional, List
 from Stratgies import VWAP, MeanReversion , POV
 from core.order import Order 
 from core import settings
+from core.model import StrategyType
 
 
 class AlgoTrade(Order):
@@ -20,26 +21,26 @@ class AlgoTrade(Order):
     def set_strategy(self):
         results = None
         if isinstance(self.strategy_types, str):
-            if self.strategy_types == settings.MEAN_REVISION:
+            if self.strategy_types == StrategyType.MEAN_REVISION:
                 results = self.mean.execute()
 
-            elif self.strategy_types == settings.VMAP:
+            elif self.strategy_types == StrategyType.VWAP:
                 results = self.vwap.execute()
             
-            elif self.strategy == settings.POV:
+            elif self.strategy_types == StrategyType.POV:
                     results[settings.POV] = self.pov.execute()
 
         else:
             results = {}
             for strategy in self.strategy_types:
-                if strategy == settings.MEAN_REVISION:
-                    results[settings.MEAN_REVISION] = self.mean.execute()
+                if strategy == StrategyType.MEAN_REVISION:
+                    results[StrategyType.MEAN_REVISION] = self.mean.execute()
 
-                if strategy == settings.VWAP:
-                    results[settings.VWAP] = self.vwap.execute()
+                if strategy == StrategyType.VWAP:
+                    results[StrategyType.VWAP] = self.vwap.execute()
 
-                if strategy == settings.POV:
-                    results[settings.POV] = self.pov.execute()
+                if strategy == StrategyType.POV:
+                    results[StrategyType.POV] = self.pov.execute()
 
         return results
 
@@ -57,4 +58,4 @@ class AlgoTrade(Order):
                 data = self.place_order(data)
                 results[strategy] = data
 
-        return results
+        return results , self.trades , self.positions
