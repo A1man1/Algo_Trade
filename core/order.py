@@ -53,5 +53,6 @@ class Order(Portfolio,OrderSub):
     def __init__(self,*args, **kwargs):
         self.order_history = []
         self.symbol = self.stock_name
+        self.total_profit=0
         super(Order, self).__init__(*args, **kwargs)
         
