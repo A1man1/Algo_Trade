@@ -23,7 +23,7 @@ class Portfolio(IPortfolio):
         if from_dataframe:
             if not data_frame.empty:
                 self.data_frame = data_frame
-                self.stock_name = 'APPle'
+                self.stock_name = self.stock_name
             else:
                 raise ValueError('"Need DataFrame"') 
         elif url:
@@ -65,21 +65,39 @@ class Portfolio(IPortfolio):
         else:
             raise ValueError(f"Error fetching data from API: {response.text}")
 
-    def open_position(self, shares: int, entry_price: float):
+    def open_position(self, shares: int, entry_price: float, trade_type: str, tend_type:str, stop_loss, exit_price):
         """
         Open a new position in the portfolio.
 
         Args:
-            quantity (int): Quantity of the asset.
+            shares (int): Quantity of the asset.
             entry_price (float): Entry price of the asset.
+            trade_type (str): Type of trade (buy/sell).
         """
         # Create a new Position object
-        position = Position(stock_name=self.stock_name, number=len(self.positions) + 1, entry_price=entry_price,
-                            shares=shares, type_='long')
+        position = Position(
+            stock_name=self.stock_name,
+            number=len(self.positions) + 1,
+            entry_price=entry_price,
+            shares=shares,
+            type_tends=tend_type,
+            exit_price=exit_price,
+            stop_loss=stop_loss
+        )
         self.positions.append(position)
         position.show()  # Display position details
 
-    def close_position(self, position_to_close: 'Position', current_price: float, percent: float):
+        # Log the trade
+        trade = Trade(
+            stock_name=self.stock_name,
+            quantity=shares,
+            price=entry_price,
+            trade_type=trade_type
+        )
+        self.trades.append(trade)
+        
+
+    def close_position(self, position_to_close: 'Position', current_price: float, percent: float,trade_type:str):
         """
         Close a position in the portfolio.
 
@@ -98,12 +116,25 @@ class Portfolio(IPortfolio):
 
             # Remove quantity_to_close from the position
             position_to_close.shares -= quantity_to_close
-
+            
+            profit_loss = (entry_price - current_price) * position_to_close.shares
+            position_to_close.profit_loss = profit_loss
+            
             # Log the trade
-            trade = Trade(stock_name=position_to_close.stock_name, quantity=quantity_to_close, price=current_price,
-                        trade_type='long')
+            trade = Trade(
+                stock_name=position_to_close.stock_name,
+                quantity=quantity_to_close,
+                price=current_price,
+                trade_type=trade_type
+            )
             self.trades.append(trade)
 
+        # This part of the code is checking if the shares of a particular position have reached zero
+        # or less. If the shares have reached zero or less, it means that the entire position has been
+        # closed (all shares have been sold). In that case, the position is removed from the list of
+        # positions in the portfolio using `self.positions.remove(position_to_close)`. This ensures
+        # that closed positions are no longer included in the list of active positions within the
+        # portfolio.
             # If the entire position is closed, remove it from the portfolio
             if position_to_close.shares <= 0:
                 self.positions.remove(position_to_close)

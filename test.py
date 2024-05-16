@@ -2,6 +2,7 @@ import pandas as pd
 import requests
 
 from core import AlgoTrade , settings
+from core.model import StrategyType
 
 # import pandas_datareader as pdr
 # import datetime 
@@ -32,7 +33,7 @@ import pandasql as pd
 end_date = datetime.datetime.now().strftime("%d-%m-%Y")
 end_date = str(end_date)
 
-start_date = (datetime.datetime.now()- datetime.timedelta(days=65)).strftime("%d-%m-%Y")
+start_date = (datetime.datetime.now()- datetime.timedelta(days=200)).strftime("%d-%m-%Y")
 start_date = str(start_date)
 
 symbol = "GODREJIND"
@@ -43,7 +44,10 @@ data =pd.sqldf("select CH_TIMESTAMP as timestamp , CH_OPENING_PRICE as open ,CH_
 data['volume'] = data['volume'].apply(int)
 data[['open', 'high', 'low', 'close', 'volume']] = data[['open', 'high', 'low', 'close','volume']].astype(float)
 
-trade = AlgoTrade(stock_name='GODREJIND',data_frame=data,from_dataframe=True,strategy_types= [settings.VWAP], quantity=1)
+trade = AlgoTrade(stock_name='GODREJIND',data_frame=data,from_dataframe=True,strategy_types= [StrategyType.POV,StrategyType.MEAN_REVISION,StrategyType.VWAP], 
+                  quantity=1,short_ma_window=10, long_ma_window=30, threshold=0.02,percent_close=0.2,
+                 transaction_fee=0.02
+                  )
 
 
 # portfolio = Portfolio(data_frame=data,stock_name=symbol)
