@@ -4,8 +4,8 @@ from core.base import  Strategy
 
 
 class VWAP(Strategy):
-    def __init__(self, order, quantity=1, short_ma_window=0, long_ma_window=100, threshold=0.01, transaction_fee=0.01):
-        super().__init__(order,quantity, short_ma_window, long_ma_window, threshold, transaction_fee)
+    def __init__(self, order, quantity=1, short_ma_window=0, long_ma_window=100, threshold=0.01, transaction_fee=0.01,percent_close=0.2):
+        super().__init__(order,quantity, short_ma_window, long_ma_window, threshold, transaction_fee,percent_close)
 
     def execute(self) -> Tuple[List[Tuple[str, float, float]], float]:
         vwap = self.calculate()
@@ -75,7 +75,7 @@ class VWAP(Strategy):
                 percent_profit = (
                     close_price - self.order.positions[-1].entry_price) / entry_price
                 self.order.close_position(
-                    position_to_close=self.order.positions[-1], percent=0.2, current_price=close_price)  # set close
+                    position_to_close=self.order.positions[-1], percent=percent_close, current_price=close_price)  # set close
                 total_profit += percent_profit
                 holding = False
                 signals.append(('sell', index, close_price,

@@ -85,13 +85,14 @@ class IPortfolio(ABC):
 
 class Strategy(ABC):
     def __init__(self, order:IOrder,quantity=1,short_ma_window=0, long_ma_window=100, threshold=0.01,
-                 transaction_fee=0.01):
+                 transaction_fee=0.01,percent_close=0.2):
         self.quantity=quantity
         self.order = order
         self.short_ma_window = short_ma_window
         self.long_ma_window = long_ma_window
         self.threshold = threshold
         self.transaction_fee = transaction_fee
+        self.percent_close=percent_close
 
     @abstractmethod
     def calculate(self) -> Optional[DataFrame | Series]:
