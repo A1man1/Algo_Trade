@@ -25,7 +25,8 @@ class Settings(BaseSettings):
 
     #project variables 
     MEAN_REVISION:str = 'mean_revision'
-    VMAP:str = 'vmap'
+    VWAP:str = 'vwap'
+    POV:str = 'pov'
     
 
 class ProdSettings(Settings):
