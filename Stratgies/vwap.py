@@ -1,16 +1,19 @@
 from typing import List, Tuple
-from pandas import Series , DataFrame
-from core.base import Portfolio, Strategy
+from pandas import Series
+from core.base import  Strategy
 
 
 class VWAP(Strategy):
-   
+    def __init__(self, order, quantity=1, short_ma_window=0, long_ma_window=100, threshold=0.01, transaction_fee=0.01,percent_close=0.2):
+        super().__init__(order,quantity, short_ma_window, long_ma_window, threshold, transaction_fee,percent_close)
+
     def execute(self) -> Tuple[List[Tuple[str, float, float]], float]:
-        vwap = self.calculate_vwap()
+        vwap = self.calculate()
         signals, total_profit = self.generate_signals(vwap)
         return signals, total_profit
 
-    def calculate_vwap(self) -> Series:
+
+    def calculate(self) -> Series:
         """
         Calculate Volume-Weighted Average Price (VWAP) for each row in the DataFrame.
 
@@ -18,19 +21,23 @@ class VWAP(Strategy):
             pandas Series: Series containing VWAP values corresponding to each row in the DataFrame.
         """
         # Calculate cumulative sum of price * volume
-        self.portfolio.data_frame['cumulative_pv'] = (self.portfolio.data_frame['close'] * self.portfolio.data_frame['volume']).cumsum()
+        self.order.data_frame['cumulative_pv'] = (
+            self.order.data_frame['close'] * self.order.data_frame['volume']).cumsum()
 
         # Calculate cumulative sum of volume
-        self.portfolio.data_frame['cumulative_volume'] = self.portfolio.data_frame['volume'].cumsum()
+        self.order.data_frame['cumulative_volume'] = self.order.data_frame['volume'].cumsum(
+        )
 
         # Calculate VWAP using rolling window
-        self.portfolio.data_frame['vwap'] = self.portfolio.data_frame['cumulative_pv'] / self.portfolio.data_frame['cumulative_volume']
+        self.order.data_frame['vwap'] = self.order.data_frame['cumulative_pv'] / \
+            self.order.data_frame['cumulative_volume']
 
         # Shift VWAP values by short_ma_window to align with current period
-        self.portfolio.data_frame['vwap'] = self.portfolio.data_frame['vwap'].shift(self.short_ma_window)
+        self.order.data_frame['vwap'] = self.order.data_frame['vwap'].shift(
+            self.short_ma_window)
 
-        return self.portfolio.data_frame['vwap']
-    
+        return self.order.data_frame['vwap']
+
 
     def generate_signals(self, vwap: Series) -> Tuple[List[Tuple[str, float, float]], float]:
         """
@@ -46,28 +53,35 @@ class VWAP(Strategy):
         holding = False
         entry_price = None
         total_profit = 0
+        
+        print(self.order.data_frame)
 
-        for index, row in self.portfolio.data_frame.iterrows():
+        for index, row in self.order.data_frame.iterrows():
             close_price = row['close']
-            current_vwap = vwap.loc[index]  # Get VWAP value corresponding to the current row
+            # Get VWAP value corresponding to the current row
+            current_vwap = vwap.loc[index]
 
             if not holding and close_price < current_vwap * (1 - self.threshold):
                 # Buy signal
-                self.portfolio.open_position(entry_price=close_price, shares=1)
+                self.order.open_position(
+                    entry_price=close_price, shares=self.quantity)
                 entry_price = close_price
                 holding = True
-                signals.append(('buy', index, close_price))
+                signals.append(('buy', index, close_price,
+                               self.quantity))
 
             if holding and close_price > current_vwap * (1 + self.threshold):
                 # Sell signal
-                percent_profit = (close_price - self.portfolio.positions[-1].entry_price) / entry_price
-                self.portfolio.close_position(position_to_close=self.portfolio.positions[-1],percent=0.2,current_price=close_price) #set close 
+                percent_profit = (
+                    close_price - self.order.positions[-1].entry_price) / entry_price
+                self.order.close_position(
+                    position_to_close=self.order.positions[-1], percent=self.percent_close, current_price=close_price)  # set close
                 total_profit += percent_profit
                 holding = False
-                signals.append(('sell', index, close_price))
+                signals.append(('sell', index, close_price,
+                               self.quantity))
 
-        self.portfolio.total_profit = total_profit  # Update total profit attribute in portfolio
+        # Update total profit attribute in order
+        self.order.total_profit = total_profit
 
-        return signals, self.portfolio.total_profit
-
-    
+        return signals, self.order.total_profit
