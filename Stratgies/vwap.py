@@ -75,7 +75,7 @@ class VWAP(Strategy):
                 percent_profit = (
                     close_price - self.order.positions[-1].entry_price) / entry_price
                 self.order.close_position(
-                    position_to_close=self.order.positions[-1], percent=percent_close, current_price=close_price)  # set close
+                    position_to_close=self.order.positions[-1], percent=self.percent_close, current_price=close_price)  # set close
                 total_profit += percent_profit
                 holding = False
                 signals.append(('sell', index, close_price,
