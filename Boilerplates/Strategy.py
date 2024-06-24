@@ -28,6 +28,12 @@ class Strategy:
     order: Order
     lookback: int = 20
     transactions: list = None
+    symbol: str
+    
+    def __init__(symbol, ):
+        #symbol, stock to test
+        pass
+
 
     def __post_init__(self):
         """
@@ -47,8 +53,8 @@ class Strategy:
                 - (optional) other relevant data points (e.g., historical prices).
         """
 
-        symbol = market_data["symbol"]
-        current_price = market_data["price"]
+        symbol = self.symbol
+        current_price = market_data["price"] # From Data Class
         # ... (rest of the mean reversion strategy logic from previous example)
 
         # Track transaction details if a trade is executed
@@ -67,7 +73,7 @@ class Strategy:
                     sell_price=current_price, transaction_cost=self.get_transaction_cost(last_order["quantity"])
                 ))
 
-    def get_transaction_cost(self, quantity: int) -> float:
+    def get_transaction_cost(self, quantity: int, brokage = 0.03) -> float:
         """
         Calculate transaction cost based on quantity.
 
@@ -79,7 +85,7 @@ class Strategy:
         """
         # Replace with your logic to calculate transaction cost based on quantity
         # (e.g., commission per share or fixed fee)
-        return quantity * 0.01  # Example: $0.01 per share
+        return quantity * brokage  # Example: $0.01 per share
 
     def get_buy_price(self, symbol: str, quantity: int) -> float:
         """

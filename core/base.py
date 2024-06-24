@@ -6,7 +6,10 @@ from pandas import Series, DataFrame
 from core.model import TradeType , PositionType
 
 
-class Trade(BaseModel):
+# To be Added
+# DATA
+
+class Trade(BaseModel):   # Add time stamp 
     stock_name: str
     quantity: int
     price: float
